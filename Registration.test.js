@@ -1,8 +1,11 @@
 import React from 'react' ;
-import { shallow } from 'enzyme';
+import { mount ,shallow} from 'enzyme';
 import Registration from './Registration';
+import TextField from '@material-ui/core/TextField';
+
 
 describe('<Registration />', () => {
+    // jest.mock('@material-ui/core/TextField', () => () => null)
     const testValues = {
         firstName: 'Leo',
         lastName: 'Master',
@@ -20,31 +23,37 @@ describe('<Registration />', () => {
         answer1: 'Answer 1',
         answer2: 'Answer 2',
         answer3: 'Answer 3',
-        submitRegistrationForm: jest.fn()
+        
     };
     
 
-    it('Submit works', () => {
-        let scrollIntoViewMock = jest.fn();
-        const component = shallow(
-            <Registration {...testValues} />
+    it('should open modal dialog', () => {
+       
+        const onSubmitSpy = jest.fn();
+        const component = mount(
+            <Registration/>
         );
-        component.find('#submitButton').simulate('click');
-        expect(scrollIntoViewMock).toBeCalled();
-        expect(testValues.submitRegistrationForm).toHaveBeenCalledTimes(1);
-        expect(testValues.submitRegistrationForm).toBeCalledWith({firstName: testValues.firstName,
-            lastName: testValues.lastName,
-            phoneNumber: testValues.phoneNumber,
-            emailAddress: testValues.emailAddress,
-            userID: testValues.userID,
-            memberID: testValues.memberID,
-            secQs1: testValues.secQs1,
-            secQs2: testValues.secQs2,
-            secQs3: testValues.secQs3,
-            answer1: testValues.answer1,
-            answer2: testValues.answer2,
-            answer3: testValues.answer3
-            });
+        expect(component.find('.custom-dialog').at(0).prop('open')).toBe(false)
+         expect(component.find('#submitButton').exists()).toEqual(true)
+         component.find('#submitButton').at(0).simulate('click');
+         component.update()
+         expect(component.find('.custom-dialog').at(0).prop('open')).toBe(true)
+       
+    });
+
+    it('should call submit', () => {
+        const fallbackIO = jest.fn()
+        const component = mount(
+            <Registration/>,{fallbackIO}
+        );
+        component.find('#standard-firstname').last().simulate('change', {target: {value: 'Leo'}})
+        const lastName = component.find('#standard-lastname').last()
+        lastName.getDOMNode().value = testValues.lastName
+        lastName.simulate('change')
+        expect(component.find('#standard-firstname').last().prop('value')).toBe('Leo')
+        component.find('#submitButton').last().simulate('click');
+         console.log(fallbackIO.mock.calls[0])
+        // expect(fallbackIO).toBeCalledTimes(3)
+
     });
 })
-
